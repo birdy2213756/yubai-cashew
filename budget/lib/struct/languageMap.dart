@@ -111,6 +111,7 @@ class InitializeLocalizations extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EasyLocalization(
+      startLocale: supportedLocales[appStateSettings["locale"]],
       useOnlyLangCode: false,
       assetLoader: RootBundleAssetLoaderCustomLocaleLoader(),
       supportedLocales: supportedLocales.values.toList(),

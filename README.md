@@ -279,4 +279,3 @@ Note: required Firebase.
 # 手机直连
 
 余白：https://yubai-43-134-20-29.sslip.io/yubai-cashew/ 。使用已有腾讯云新加坡服务器，不要求手机使用代理；具体网络可用性仍以实际访问为准。iPhone Safari → 分享 → 添加到主屏幕。账目保存在手机本地，请定期使用设置中的完整 SQLite 备份。详细改动、测试和限制见 [YUBAI.md](YUBAI.md)。
-

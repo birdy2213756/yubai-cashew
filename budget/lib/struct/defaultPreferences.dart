@@ -190,7 +190,7 @@ Future<Map<String, dynamic>> getDefaultPreferences() async {
     "iOSEmulate": false,
     "iOSAnimatedGoo": false,
     "expandedNavigationSidebar": true,
-    "locale": "System", // the locale code or "System"
+    "locale": "zh", // New installations start in Simplified Chinese.
     "firstDayOfWeek": -1, // -1: Locale/System, 0: Sunday, 1: Monday,
     "disableShadows": false,
     "showBillSplitterShortcut": false,
