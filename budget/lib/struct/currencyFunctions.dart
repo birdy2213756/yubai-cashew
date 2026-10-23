@@ -2,6 +2,8 @@ import 'package:budget/struct/settings.dart';
 import 'dart:convert';
 import 'package:budget/database/tables.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:budget/struct/yubaiPrivacy.dart';
 import 'package:http/http.dart' as http;
 
 Map<String, dynamic> currenciesJSON = {};
@@ -18,9 +20,12 @@ Future<bool> getExchangeRates() async {
   Map<dynamic, dynamic> cachedCurrencyExchange =
       appStateSettings["cachedCurrencyExchange"];
   try {
-    Uri url = Uri.parse(
-        "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json");
-    dynamic response = await http.get(url);
+    // The private Web edition uses its own host, so phones need no external CDN.
+    final url = kIsWeb && yubaiLocalOnly
+        ? Uri.base.resolve('rates/usd.min.json')
+        : Uri.parse(
+            'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json');
+    final response = await http.get(url).timeout(const Duration(seconds: 5));
     if (response.statusCode == 200) {
       cachedCurrencyExchange = json.decode(response.body)?["usd"];
     }

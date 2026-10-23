@@ -1,4 +1,5 @@
 import 'package:budget/database/tables.dart';
+import 'package:budget/widgets/wishReview.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addObjectivePage.dart';
 import 'package:budget/pages/addTransactionPage.dart';
@@ -575,6 +576,7 @@ class _ObjectivePageContentState extends State<_ObjectivePageContent> {
                     child: numberTransactionsWidget,
                   ),
                 ),
+              SliverToBoxAdapter(child: WishReview(objective: widget.objective)),
               TransactionEntries(
                 null,
                 null,

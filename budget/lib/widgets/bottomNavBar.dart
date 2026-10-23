@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' show ImageFilter;
 import 'package:budget/functions.dart';
 import 'package:budget/pages/editBudgetPage.dart';
 import 'package:budget/pages/editHomePage.dart';
@@ -107,6 +108,14 @@ class BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
+    return ClipRect(child: BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: appStateSettings["batterySaver"] ? 0 : 16,
+        sigmaY: appStateSettings["batterySaver"] ? 0 : 16),
+      child: _buildNavigation(context),
+    ));
+  }
+
+  Widget _buildNavigation(BuildContext context) {
     // The index of the actual navigation bar, this is not the navigation stack index
     int navigationBarIndex = getNavigationBarIndexFromStackedIndex(
         widget.currentNavigationStackedIndex);
@@ -120,7 +129,7 @@ class BottomNavBarState extends State<BottomNavBar> {
               colorScheme: Theme.of(context).colorScheme,
               brightness: Theme.of(context).brightness,
               lightDarkAccent: getColor(context, "lightDarkAccent"),
-            ),
+            ).withOpacity(0.88),
             boxShadow: boxShadowSharp(context),
           ),
           padding: EdgeInsetsDirectional.only(
@@ -221,7 +230,7 @@ class BottomNavBarState extends State<BottomNavBar> {
             colorScheme: Theme.of(context).colorScheme,
             brightness: Theme.of(context).brightness,
             lightDarkAccent: getColor(context, "lightDarkAccent"),
-          ),
+          ).withOpacity(0.88),
           surfaceTintColor: Colors.transparent,
           indicatorColor: appStateSettings["materialYou"]
               ? dynamicPastel(context, Theme.of(context).colorScheme.primary,
@@ -231,7 +240,7 @@ class BottomNavBarState extends State<BottomNavBar> {
             if (states.contains(MaterialState.selected)) {
               return TextStyle(
                 fontFamily: appStateSettings["font"],
-                fontFamilyFallback: ['Inter'],
+                fontFamilyFallback: ['YubaiSansSC', 'Inter'],
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
                 overflow: TextOverflow.clip,
@@ -239,7 +248,7 @@ class BottomNavBarState extends State<BottomNavBar> {
             } else {
               return TextStyle(
                 fontFamily: appStateSettings["font"],
-                fontFamilyFallback: ['Inter'],
+                fontFamilyFallback: ['YubaiSansSC', 'Inter'],
                 fontSize: 13,
                 overflow: TextOverflow.clip,
               );

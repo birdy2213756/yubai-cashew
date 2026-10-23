@@ -63,14 +63,15 @@ class TextFont extends StatelessWidget {
     }
 
     final TextStyle textStyle = TextStyle(
-      letterSpacing: letterSpacing,
+      letterSpacing: letterSpacing ?? (fontSize >= 25 ? -0.45 : 0),
+      height: 1.35,
       fontWeight: this.fontWeight,
       fontSize: this.fontSize,
       fontFamily: fallbackFontLocales.contains(appStateSettings["locale"]) &&
               appStateSettings["font"] == "Avenir"
           ? "DMSans"
           : appStateSettings["font"],
-      fontFamilyFallback: ['Inter'],
+      fontFamilyFallback: ['YubaiSansSC', 'Inter'],
       color: finalTextColor,
       decoration: TextDecoration.underline,
       decorationStyle: TextDecorationStyle.double,
@@ -163,7 +164,7 @@ List<TextSpan> generateSpans({
   TextStyle textStyle = TextStyle(
     color: getColor(context, "black"),
     fontFamily: appStateSettings["font"],
-    fontFamilyFallback: ['Inter'],
+    fontFamilyFallback: ['YubaiSansSC', 'Inter'],
     fontSize: fontSize,
   );
 

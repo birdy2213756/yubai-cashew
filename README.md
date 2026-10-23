@@ -1,3 +1,9 @@
+# 余白 · Yubai
+
+基于 James Kokoska 的 Cashew 制作的个人记账 PWA。保留原有账本和 Goals，增加浅紫主题、30 天冷静期与只读购买预算检查。修改日期：2026-10-23。详见 [余白运行、备份与部署说明](YUBAI.md)。沿用 [GPL-3.0](LICENSE)，公开分发时提供对应源码。
+
+以下保留原 Cashew 项目介绍和作者归属；其中的官方商店及云服务链接属于上游项目。
+
 <h1 align="center" style="font-size:28px; line-height:1"><b>Cashew</b></h1>
 
 
@@ -270,3 +276,7 @@ Note: required Firebase.
 ### Long Term Loans
 
 - Long term loans create a goal. However, the goals total is not used. Instead the total of the goal is calculated by totalling the proper polarity of transactions of the opposite type. For example, if it was a loan of 100$ lent out, the initial transaction would be 100$ of negative polarity (expense) and that would be the total of the goal. When a payment is made, it is made in the opposite (positive) polarity (income) and added to the total 'paid back'. We can easily find how much is remaining by taking the difference (or the addition including polarities).
+# 手机直连
+
+余白：https://yubai-43-134-20-29.sslip.io/yubai-cashew/ 。使用已有腾讯云新加坡服务器，不要求手机使用代理；具体网络可用性仍以实际访问为准。iPhone Safari → 分享 → 添加到主屏幕。账目保存在手机本地，请定期使用设置中的完整 SQLite 备份。详细改动、测试和限制见 [YUBAI.md](YUBAI.md)。
+

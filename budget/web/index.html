@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hans">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -17,43 +17,42 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <!-- Local-only edition: block the unused Google sign-in SDK and external
+       connections; assets and the public currency feed use this same host. -->
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; connect-src 'self' blob: data:; font-src 'self' data:;">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="google-signin-client_id" content="267621253497-1na8q1lt56qg9177dskkrkdds5jjiqrn.apps.googleusercontent.com">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="budget">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="余白">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/pg" href="favicon/png"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
 
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFFFF">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#000000">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFCF7">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#191622">
 
-  <title>Cashew</title>
+  <title>余白 · Yubai</title>
   <link rel="manifest" href="manifest.json">
 
-  <meta name="title" content="Cashew" />
-  <meta name="description" content="A budget and financial tracking application designed for you" />
+  <meta name="title" content="余白 · Yubai" />
+  <meta name="description" content="Private local bookkeeping · Based on Cashew · GPL-3.0" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://cashewapp.web.app/assets/preview.png" />
-  <meta property="og:title" content="Cashew" />
-  <meta property="og:description" content="A budget and financial tracking application designed for you" />
-  <meta property="og:image" content="https://cashewapp.web.app/assets/preview.png" />
+  <meta property="og:title" content="余白 · Yubai" />
+  <meta property="og:description" content="Private local bookkeeping · Based on Cashew · GPL-3.0" />
 
   <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="https://cashewapp.web.app/assets/preview.png" />
-  <meta property="twitter:title" content="Cashew" />
-  <meta property="twitter:description" content="A budget and financial tracking application designed for you" />
-  <meta property="twitter:image" content="https://cashewapp.web.app/assets/preview.png" />
+  <meta property="twitter:title" content="余白 · Yubai" />
+  <meta property="twitter:description" content="Private local bookkeeping · Based on Cashew · GPL-3.0" />
 
   <script>
     // The value below is injected by flutter build, do not touch.
-    var serviceWorkerVersion = null;
+    var serviceWorkerVersion = {{flutter_service_worker_version}};
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
@@ -62,41 +61,34 @@
   <style>
     @media (prefers-color-scheme: dark) {
       body {
-        background-color: black;
+        background-color: #191622;
       }
     }
   </style>
-  <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-  
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGiaRl72d4k3Ki0dh8ra-gU4v2z04CgIw",
-      authDomain: "budget-app-flutter.firebaseapp.com",
-      projectId: "budget-app-flutter",
-      storageBucket: "budget-app-flutter.appspot.com",
-      messagingSenderId: "267621253497",
-      appId: "1:267621253497:web:12558fe9abebf7fa842fa8"
-    };
-  
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-  </script>
   <script defer src="sql-wasm.js"></script>
   <div id="loading">
     <style>
       body {
         inset: 0;
+        background-color: #FFFCF7;
         overflow: hidden;
         margin: 0;
         padding: 0;
         position: fixed;
+      }
+
+      /* Let Safari provide the notch/home-indicator insets around the view. */
+      @supports (padding: env(safe-area-inset-top)) {
+        body {
+          top: env(safe-area-inset-top);
+          right: env(safe-area-inset-right);
+          bottom: env(safe-area-inset-bottom);
+          left: env(safe-area-inset-left);
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background-color: #191622; }
       }
 
       #loading {
@@ -156,22 +148,43 @@
     <div class="column">
       <img src="./icons/Icon.png" class="loading-icon"/>
       <div class="loading-spinner"></div>
+      <p><a href="source/yubai-source.zip">余白源码 / Source</a> ·
+        <a href="source/LICENSE.txt">GPL-3.0 · Based on Cashew</a></p>
     </div>
   </div>
   <script>
-    window.addEventListener('load', function(ev) {
+    window.addEventListener('load', async function(ev) {
+      // Retire this app's old Flutter worker without touching ledger storage.
+      if ('serviceWorker' in navigator) {
+        const scope = new URL('./', document.baseURI).href;
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        let retired = false;
+        for (const registration of registrations) {
+          const script = registration.active && registration.active.scriptURL;
+          if (registration.scope === scope && script &&
+              new URL(script).pathname.endsWith('/flutter_service_worker.js')) {
+            retired = (await registration.unregister()) || retired;
+          }
+        }
+        if (retired && navigator.serviceWorker.controller) {
+          location.reload();
+          return;
+        }
+      }
+      // A request can be refused by Safari; backups remain necessary.
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().catch(() => false);
+      }
       var loading = document.querySelector('#loading');
       // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        }
-      }).then(function(engineInitializer) {
+      _flutter.loader.loadEntrypoint({}).then(function(engineInitializer) {
         loading.classList.add('main_done');
         return engineInitializer.initializeEngine({
           useColorEmoji: true,
         });
       }).then(function(appRunner) {
+        document.querySelector('meta[name="viewport"]').content =
+          'width=device-width, initial-scale=1, viewport-fit=cover';
         loading.classList.add('init_done');
         return appRunner.runApp();
       }).then(function (_) {
@@ -181,15 +194,7 @@
           loading.remove();
         }, 200);
 
-        // https://github.com/flutter/flutter/issues/55913#issuecomment-1248816491
-        
-        const flutterRoot = document.getElementsByTagName('flt-glass-pane').item(0);
-        flutterRoot.addEventListener('touchstart', (e) => {
-          // is not near edge of view, exit
-          if (e.pageX > 24 && e.pageX < window.innerWidth - 24) return;
-          // prevent swipe to navigate gesture
-          e.preventDefault();
-        });
+
       });
     });
   </script>

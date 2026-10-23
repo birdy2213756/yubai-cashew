@@ -1,0 +1,23 @@
+yubai-43-134-20-29.sslip.io {
+    encode zstd gzip
+    redir / /yubai-cashew/ 302
+    redir /yubai-cashew /yubai-cashew/ 308
+
+    # Only public exchange rates are fetched here. No ledger data is sent.
+    @rates path /yubai-cashew/rates/usd.min.json
+    handle @rates {
+        rewrite * /npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json
+        reverse_proxy https://cdn.jsdelivr.net {
+            header_up Host cdn.jsdelivr.net
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 5s
+            }
+        }
+    }
+    handle_path /yubai-cashew/* {
+        root * /srv/yubai/current
+        header Cache-Control "no-cache"
+        file_server
+    }
+}

@@ -1107,6 +1107,7 @@ void openFontPicker(BuildContext context) {
         itemsAreFonts: true,
         items: [
           // These values match that of pubspec font family
+          "Geist",
           "Avenir",
           "DMSans",
           "Metropolis",

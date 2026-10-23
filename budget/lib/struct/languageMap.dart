@@ -5,7 +5,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-String globalAppName = "Cashew";
+String get globalAppName => (appStateSettings["locale"] == "System"
+    ? WidgetsBinding.instance.platformDispatcher.locale.languageCode
+    : appStateSettings["locale"].toString()).startsWith("zh") ? "余白" : "Yubai";
 
 Map<String, dynamic> languageNamesJSON = {};
 loadLanguageNamesJSON() async {

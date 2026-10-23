@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:budget/struct/yubaiPrivacy.dart';
 import 'package:budget/colors.dart';
 import 'package:budget/database/generatePreviewData.dart';
 import 'package:budget/database/tables.dart';
@@ -80,6 +81,15 @@ Future<bool> signInGoogle(
     bool? drivePermissionsAttachments,
     bool? silentSignIn,
     Function()? next}) async {
+  if (yubaiLocalOnly) {
+    if (silentSignIn != true) {
+      openSnackbar(SnackbarMessage(
+        title: 'yubai-local-only'.tr(),
+        description: 'yubai-local-only-description'.tr(),
+      ));
+    }
+    return false;
+  }
   // bool isConnected = false;
   if (await checkLockedFeatureIfInDemoMode(context) == false) return false;
   if (appStateSettings["emailScanning"] == false) gMailPermissions = false;
@@ -1533,6 +1543,7 @@ Future<bool> saveDriveFileToDevice({
 }
 
 bool openBackupReminderPopupCheck(BuildContext context) {
+  if (yubaiLocalOnly) return false;
   if ((appStateSettings["currentUserEmail"] == null ||
           appStateSettings["currentUserEmail"] == "") &&
       ((appStateSettings["numLogins"] + 1) % 7 == 0) &&

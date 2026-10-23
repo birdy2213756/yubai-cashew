@@ -1,0 +1,54 @@
+name: Build and deploy Yubai to GitHub Pages
+# Manual only. Creating a repository or publishing still needs user authorization.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.3'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: budget
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        working-directory: budget
+      - run: flutter test
+        working-directory: budget
+      - name: Build for the repository path
+        working-directory: budget
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          BASE_HREF="/$REPO_NAME/"
+          if [[ "$REPO_NAME" == *.github.io ]]; then BASE_HREF="/"; fi
+          flutter build web --release --web-renderer html --pwa-strategy=none --no-web-resources-cdn --base-href "$BASE_HREF"
+          touch build/web/.nojekyll
+          mkdir -p build/web/source
+          git -C .. archive --format=zip HEAD -o budget/build/web/source/yubai-source.zip
+          cp ../LICENSE build/web/source/LICENSE.txt
+          cp ../YUBAI.md build/web/source/YUBAI.md
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: budget/build/web
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

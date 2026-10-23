@@ -83,7 +83,7 @@ class AboutPageState extends State<AboutPage> {
               padding: const EdgeInsetsDirectional.symmetric(
                   vertical: 0, horizontal: 10),
               child: TextFont(
-                text: getVersionString(),
+                text: getVersionString() + "\nBased on Cashew · James Kokoska · GPL-3.0",
                 fontSize: 14,
                 textAlign: TextAlign.center,
                 maxLines: 5,

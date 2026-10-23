@@ -395,8 +395,8 @@ ColorScheme getColorScheme(Brightness brightness) {
       brightness: Brightness.light,
       background: appStateSettings["materialYou"]
           ? lightenPastel(getSettingConstants(appStateSettings)["accentColor"],
-              amount: 0.91)
-          : Colors.white,
+              amount: 0.97)
+          : const Color(0xFFFFFCF7),
     );
   } else {
     return ColorScheme.fromSeed(
@@ -620,9 +620,17 @@ ThemeData getLightTheme() {
     //   TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
     // }),
     fontFamily: appStateSettings["font"],
-    fontFamilyFallback: ['Inter'],
+    fontFamilyFallback: ['YubaiSansSC', 'Inter'],
     colorScheme: getColorScheme(brightness),
     useMaterial3: true,
+    cardTheme: CardTheme(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    ),
+    filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(
+      minimumSize: const Size(44, 48),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    )),
     applyElevationOverlayColor: false,
     typography: Typography.material2014(),
     splashColor: getPlatform() == PlatformOS.isIOS
@@ -654,9 +662,17 @@ ThemeData getDarkTheme() {
     //   TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
     // }),
     fontFamily: appStateSettings["font"],
-    fontFamilyFallback: ['Inter'],
+    fontFamilyFallback: ['YubaiSansSC', 'Inter'],
     colorScheme: getColorScheme(brightness),
     useMaterial3: true,
+    cardTheme: CardTheme(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    ),
+    filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(
+      minimumSize: const Size(44, 48),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    )),
     typography: Typography.material2014(),
     splashColor: getPlatform() == PlatformOS.isIOS
         ? Colors.transparent

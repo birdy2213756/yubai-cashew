@@ -80,7 +80,7 @@ class BudgetContainer extends StatelessWidget {
             // height: height,
             child: ClipRRect(
               clipBehavior: Clip.antiAlias,
-              borderRadius: BorderRadiusDirectional.circular(15),
+              borderRadius: BorderRadiusDirectional.circular(24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -368,10 +368,14 @@ class BudgetContainer extends StatelessWidget {
           );
     return Container(
       decoration: BoxDecoration(
-        boxShadow: boxShadowCheck(boxShadowGeneral(context)),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: appStateSettings["batterySaver"] ? [] : [
+          BoxShadow(color: Theme.of(context).colorScheme.primary.withOpacity(0.07),
+            blurRadius: 20, offset: const Offset(0, 6)),
+        ],
       ),
       child: OpenContainerNavigation(
-        borderRadius: 20,
+        borderRadius: 24,
         closedColor: backgroundColor,
         button: (openContainer) {
           return Tappable(
@@ -389,7 +393,7 @@ class BudgetContainer extends StatelessWidget {
                     );
                   }
                 : null,
-            borderRadius: 20,
+            borderRadius: 24,
             child: widget,
             color: backgroundColor,
           );
