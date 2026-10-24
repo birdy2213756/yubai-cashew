@@ -3,6 +3,14 @@ yubai-43-134-20-29.sslip.io {
     redir / /yubai-cashew/ 302
     redir /yubai-cashew /yubai-cashew/ 308
 
+    @appleIcon path /apple-touch-icon.png /apple-touch-icon-precomposed.png
+    handle @appleIcon {
+        root * /srv/yubai/current
+        rewrite * /apple-touch-icon.png
+        header Cache-Control "no-cache"
+        file_server
+    }
+
     # Only public exchange rates are fetched here. No ledger data is sent.
     @rates path /yubai-cashew/rates/usd.min.json
     handle @rates {
