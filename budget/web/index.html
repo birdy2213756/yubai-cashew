@@ -40,6 +40,7 @@
 
   <title>余白 · Yubai</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="startup.css?v=20261025">
 
   <meta name="title" content="余白 · Yubai" />
   <meta name="description" content="Private local bookkeeping · Based on Cashew · GPL-3.0" />
@@ -60,99 +61,29 @@
   <script src="flutter.js" defer></script>
 </head>
 <body oncontextmenu="return false;">
-  <style>
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #191622;
-      }
-    }
-  </style>
-
   <script defer src="sql-wasm.js"></script>
-  <div id="loading">
-    <style>
-      body {
-        inset: 0;
-        background-color: #FFFCF7;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        position: fixed;
-      }
-
-      /* Let Safari provide the notch/home-indicator insets around the view. */
-      @supports (padding: env(safe-area-inset-top)) {
-        body {
-          top: env(safe-area-inset-top);
-          right: env(safe-area-inset-right);
-          bottom: env(safe-area-inset-bottom);
-          left: env(safe-area-inset-left);
-        }
-      }
-      @media (prefers-color-scheme: dark) {
-        body { background-color: #191622; }
-      }
-
-      #loading {
-        align-items: center;
-        display: flex;
-        height: 100%;
-        justify-content: center;
-        width: 100%;
-      }
-
-      #loading .loading-spinner, #loading .loading-icon {
-        transition: opacity 0.5s;
-      }
-
-      #loading.main_done .loading-spinner {
-        opacity: 0;
-      }
-
-      #loading.init_done .loading-spinner, #loading.init_done .loading-icon {
-        /* animation: .33s ease-in-out 0s 1 forwards zoom; */
-        opacity: 0;
-      }
-
-      .loading-spinner {
-        margin: 40px 10px;
-        display: inline-block;
-        width: 45px;
-        height: 45px;
-        border: 4px solid rgba(255,255,255,.3);
-        border-radius: 50%;
-        border-top-color: #e3e7ff;
-        animation: spin 1s linear infinite;
-        opacity: .66;
-      }
-
-      .column{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .loading-icon{
-        margin: 40px 10px;
-        width: min(30vh, 30vw);
-        height: min(30vh, 30vw);
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-    </style>
-    <div class="column">
-      <img src="./icons/Icon.png" class="loading-icon"/>
-      <div class="loading-spinner"></div>
-      <p><a href="source/yubai-source.zip">余白源码 / Source</a> ·
-        <a href="source/LICENSE.txt">GPL-3.0 · Based on Cashew</a></p>
-    </div>
+  <div id="loading" aria-label="余白启动中">
+    <main class="launch-main">
+      <div class="launch-mark" aria-hidden="true">
+        <img class="launch-logo" src="startup/yubai.svg" width="92" height="92" alt="">
+      </div>
+      <h1 class="launch-name">余白</h1>
+      <div class="launch-wordmark" aria-hidden="true">YUBAI</div>
+      <p class="launch-tagline">让每一笔都简单。</p>
+      <div class="launch-status" role="status" aria-live="polite" aria-atomic="true">
+        <span class="launch-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span id="loading-status">正在打开账本</span>
+      </div>
+      <button class="launch-retry" id="loading-retry" type="button" hidden>刷新重试</button>
+      <noscript><p>需要启用浏览器的脚本功能。</p></noscript>
+    </main>
+    <footer class="launch-footer">
+      <p>基于 Cashew · GPL-3.0</p>
+      <nav aria-label="开源与许可">
+        <a href="source/yubai-source.zip">查看源码</a>
+        <a href="source/LICENSE.txt">开源许可</a>
+      </nav>
+    </footer>
   </div>
   <script>
     window.addEventListener('load', async function(ev) {
@@ -177,27 +108,40 @@
       if (navigator.storage && navigator.storage.persist) {
         navigator.storage.persist().catch(() => false);
       }
-      var loading = document.querySelector('#loading');
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({}).then(function(engineInitializer) {
-        loading.classList.add('main_done');
-        return engineInitializer.initializeEngine({
-          useColorEmoji: true,
-        });
-      }).then(function(appRunner) {
+      const loading = document.querySelector('#loading');
+      const status = document.querySelector('#loading-status');
+      const retry = document.querySelector('#loading-retry');
+      retry.addEventListener('click', () => location.reload());
+      let dismissed = false;
+      function revealApp() {
+        if (dismissed) return;
+        dismissed = true;
+        loading.classList.add('is-ready');
+        loading.setAttribute('aria-hidden', 'true');
+        loading.addEventListener('transitionend', () => loading.remove(), {once: true});
+        // CSS transitions may be disabled by the browser or accessibility settings.
+        window.setTimeout(() => loading.remove(), 260);
+      }
+      window.addEventListener('flutter-first-frame', revealApp, {once: true});
+      const pauseWhenHidden = () => document.documentElement.classList.toggle('launch-paused', document.hidden);
+      document.addEventListener('visibilitychange', pauseWhenHidden);
+      pauseWhenHidden();
+      try {
+        // Preserve this project's Flutter 3.22 loader and same-origin assets.
+        const engine = await _flutter.loader.loadEntrypoint({});
+        status.textContent = '正在准备界面';
+        const runner = await engine.initializeEngine({useColorEmoji: true});
         document.querySelector('meta[name="viewport"]').content =
           'width=device-width, initial-scale=1, viewport-fit=cover';
-        loading.classList.add('init_done');
-        return appRunner.runApp();
-      }).then(function (_) {
-        // Wait a few milliseconds so users can see the "zoom" animation
-        // before getting rid of the "loading" div.
-        window.setTimeout(function () {
-          loading.remove();
-        }, 200);
-
-
-      });
+        await runner.runApp();
+        // Older renderer variants may not dispatch flutter-first-frame.
+        requestAnimationFrame(() => requestAnimationFrame(revealApp));
+      } catch (error) {
+        loading.classList.add('is-error');
+        status.textContent = '暂时未能打开账本';
+        retry.hidden = false;
+        console.error('Yubai startup failed', error);
+      }
     });
   </script>
 </body>
