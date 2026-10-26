@@ -194,48 +194,91 @@ class ExpenseIncomeSelectorLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = Center(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(top: 2),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (showIcons)
-              AnimatedOpacity(
-                duration: Duration(milliseconds: 300),
-                opacity: (isIncome && selectedIncome) ||
-                        (isIncome == false && selectedIncome == false)
-                    ? 1
-                    : 0.5,
-                child: IncomeOutcomeArrow(
-                  width: 19,
-                  isIncome: isIncome,
-                  color: customColor ??
-                      (isIncome
-                          ? getColor(context, "incomeAmount")
-                          : getColor(context, "expenseAmount")),
+    Widget contentWithColor(double opacity) => Center(
+          child: Padding(
+            padding: const EdgeInsetsDirectional.only(top: 2),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (showIcons)
+                  if (!kIsWeb)
+                    AnimatedOpacity(
+                      duration: Duration(milliseconds: 300),
+                      opacity: (isIncome && selectedIncome) ||
+                              (isIncome == false && selectedIncome == false)
+                          ? 1
+                          : 0.5,
+                      child: IncomeOutcomeArrow(
+                        width: 19,
+                        isIncome: isIncome,
+                        color: customColor ??
+                            (isIncome
+                                ? getColor(context, "incomeAmount")
+                                : getColor(context, "expenseAmount")),
+                      ),
+                    ),
+                if (showIcons && kIsWeb)
+                  IncomeOutcomeArrow(
+                    width: 19,
+                    isIncome: isIncome,
+                    color: (customColor ??
+                            getColor(context,
+                                isIncome ? "incomeAmount" : "expenseAmount"))
+                        .withOpacity(opacity),
+                  ),
+                if (customIcon != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 5),
+                    child: kIsWeb
+                        ? IconTheme.merge(
+                            data: IconThemeData(
+                                color: (IconTheme.of(context).color ??
+                                        getColor(context, "black"))
+                                    .withOpacity(opacity)),
+                            child: customIcon!,
+                          )
+                        : customIcon!,
+                  ),
+                Flexible(
+                  child: AnimatedSizeSwitcher(
+                    // HTML/WebKit can crop text when an opacity surface is also
+                    // clipped/resized. Labels need only a color change on Web.
+                    enabled: !kIsWeb,
+                    child: TextFont(
+                      key: ValueKey(label.toString()),
+                      text:
+                          label ?? (isIncome ? "income".tr() : "expense".tr()),
+                      maxLines: 2,
+                      fontSize: 14.5,
+                      textAlign: TextAlign.center,
+                      textColor: kIsWeb
+                          ? getColor(context, "black").withOpacity(opacity)
+                          : null,
+                    ),
+                  ),
                 ),
-              ),
-            if (customIcon != null)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(end: 5),
-                child: customIcon!,
-              ),
-            Flexible(
-              child: AnimatedSizeSwitcher(
-                child: TextFont(
-                  key: ValueKey(label.toString()),
-                  text: label ?? (isIncome ? "income".tr() : "expense".tr()),
-                  maxLines: 2,
-                  fontSize: 14.5,
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
+    if (kIsWeb) {
+      final selected = isIncome == selectedIncome;
+      if (tabController == null) {
+        return TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 200),
+          tween: Tween<double>(end: selected ? 1 : 0.65),
+          builder: (_, opacity, __) => contentWithColor(opacity),
+        );
+      }
+      return AnimatedBuilder(
+        animation: tabController!.animation!,
+        builder: (_, __) {
+          final value = tabController!.animation!.value.clamp(0.0, 1.0);
+          return contentWithColor(0.65 + (isIncome ? value : 1 - value) * 0.35);
+        },
+      );
+    }
+    final content = contentWithColor(1);
     return tabController == null
         ? AnimatedOpacity(
             duration: Duration(milliseconds: 300),
