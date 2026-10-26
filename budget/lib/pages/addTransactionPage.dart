@@ -947,11 +947,13 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         mainAndSubcategory.ignoredSubcategorySelection == false) {
       selectAmountPopup(
         next: () async {
-          await addTransaction();
-          popRoute(context);
-          popRoute(context);
+          final saved = await addTransaction();
+          if (saved && mounted) {
+            popRoute(context);
+            popRoute(context);
+          }
         },
-        nextLabel: textAddTransaction,
+        nextLabel: "yubai-entry-confirm".tr(),
       );
     }
   }
@@ -961,7 +963,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
       context,
       fullSnap: true,
       PopupFramework(
-        title: "enter-amount".tr(),
+        title: (selectedIncome ? "yubai-income-amount" : "yubai-expense-amount")
+            .tr(),
         hasPadding: false,
         underTitleSpace: false,
         child: SelectAmount(
@@ -977,11 +980,51 @@ class _AddTransactionPageState extends State<AddTransactionPage>
           onlyShowCurrencyIcon: true,
           amountPassed: (selectedAmount ?? "0").toString(),
           setSelectedAmount: setSelectedAmount,
+          extraWidgetAboveNumbers: next == null
+              ? null
+              : Column(
+                  children: [
+                    DateButton(
+                      label: "yubai-entry-date".tr(),
+                      initialSelectedDate: selectedDate,
+                      initialSelectedTime: TimeOfDay.fromDateTime(selectedDate),
+                      internalPadding:
+                          const EdgeInsetsDirectional.symmetric(vertical: 4),
+                      setSelectedDate: (date) =>
+                          setState(() => selectedDate = date),
+                      setSelectedTime: (time) => setState(() => selectedDate =
+                          selectedDate.copyWith(
+                              hour: time.hour, minute: time.minute)),
+                    ),
+                    StatefulBuilder(builder: (sheetContext, updateNote) {
+                      return LowKeyButton(
+                        text: _noteInputController.text.isEmpty
+                            ? "yubai-entry-add-note".tr()
+                            : "yubai-entry-edit-note".tr(),
+                        onTap: () async {
+                          await openBottomSheet(
+                            sheetContext,
+                            PopupFramework(
+                              title: "yubai-entry-note".tr(),
+                              child: SelectText(
+                                selectedText: _noteInputController.text,
+                                setSelectedText: setSelectedNoteController,
+                                labelText: "yubai-entry-note".tr(),
+                                buttonLabel: "yubai-entry-confirm".tr(),
+                              ),
+                            ),
+                          );
+                          if (sheetContext.mounted) updateNote(() {});
+                        },
+                      );
+                    }),
+                  ],
+                ),
           next: next ??
               () async {
                 popRoute(context);
               },
-          nextLabel: nextLabel ?? "set-amount".tr(),
+          nextLabel: nextLabel ?? "yubai-entry-confirm".tr(),
         ),
       ),
     );
@@ -1079,6 +1122,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
             ? Container(height: 20)
             : Container(height: 10),
         TitleInput(
+          labelText: "yubai-entry-name".tr(),
           clearWhenUnfocused: true,
           tryToCompleteSearch: true,
           setSelectedTitle: (title) {
@@ -1117,6 +1161,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                 child: AnimatedSwitcher(
                   duration: Duration(milliseconds: 300),
                   child: DateButton(
+                    label: "yubai-entry-date".tr(),
                     internalPadding: EdgeInsetsDirectional.only(
                         start: 12, bottom: 6, top: 6, end: 8),
                     key: ValueKey(selectedDate.toString()),
@@ -1136,78 +1181,92 @@ class _AddTransactionPageState extends State<AddTransactionPage>
               enableDoubleColumn(context) == false
                   ? SizedBox(height: 5)
                   : SizedBox.shrink(),
-              HorizontalBreakAbove(
-                enabled: enableDoubleColumn(context),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(top: 5),
-                  child: SelectChips(
-                    allowMultipleSelected: false,
-                    wrapped: enableDoubleColumn(context),
-                    onLongPress: (item) {
-                      openSelectSpecialTransactionTypeInfo();
-                    },
-                    extraWidgetBefore: Transform.scale(
-                      scale: 1.3,
-                      child: IconButton(
-                        padding: EdgeInsetsDirectional.zero,
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(
-                          appStateSettings["outlinedIcons"]
-                              ? Icons.info_outlined
-                              : Icons.info_outline_rounded,
-                          size: 19,
+              if (showMoreOptions ||
+                  selectedType != null ||
+                  isAddedToLoanObjective)
+                HorizontalBreakAbove(
+                  enabled: enableDoubleColumn(context),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(top: 5),
+                    child: SelectChips(
+                      allowMultipleSelected: false,
+                      wrapped: enableDoubleColumn(context),
+                      onLongPress: (item) {
+                        openSelectSpecialTransactionTypeInfo();
+                      },
+                      extraWidgetBefore: Transform.scale(
+                        scale: 1.3,
+                        child: IconButton(
+                          padding: EdgeInsetsDirectional.zero,
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            appStateSettings["outlinedIcons"]
+                                ? Icons.info_outlined
+                                : Icons.info_outline_rounded,
+                            size: 19,
+                          ),
+                          onPressed: openSelectSpecialTransactionTypeInfo,
                         ),
-                        onPressed: openSelectSpecialTransactionTypeInfo,
                       ),
+                      items:
+                          getTransactionSpecialTypesToShowGivenInitialTypeWhenAddingTransaction(
+                              widget.selectedType, isAddedToLoanObjective),
+                      getLabel: (item) {
+                        const entryLabels = {
+                          null: "yubai-entry-regular",
+                          TransactionSpecialType.upcoming:
+                              "yubai-entry-planned",
+                          TransactionSpecialType.subscription:
+                              "yubai-entry-subscription",
+                          TransactionSpecialType.repetitive:
+                              "yubai-entry-repeat",
+                        };
+                        if (entryLabels.containsKey(item))
+                          return entryLabels[item]!.tr();
+                        if (item is TransactionSpecialType || item == null) {
+                          return transactionTypeDisplayToEnum[item]
+                                  ?.toString()
+                                  .toLowerCase()
+                                  .tr() ??
+                              "";
+                        } else {
+                          return "installments".tr();
+                        }
+                      },
+                      onSelected: (item) async {
+                        if (item == "installments") {
+                          openPopup(
+                            context,
+                            title: "track-installments".tr(),
+                            description: "track-installments-description".tr(),
+                            icon: navBarIconsData["goals"]!.iconData,
+                            onSubmit: () async {
+                              popRoute(context);
+                              dynamic result = await startCreatingInstallment(
+                                  context: context);
+                              if (result == true) popRoute(context);
+                            },
+                            onSubmitLabel: "ok".tr(),
+                            onCancel: () {
+                              popRoute(context);
+                            },
+                            onCancelLabel: "cancel".tr(),
+                          );
+                        } else if (item is TransactionSpecialType ||
+                            item == null) {
+                          setSelectedType(transactionTypeDisplayToEnum[item]);
+                        }
+                      },
+                      getSelected: (item) {
+                        if (item is TransactionSpecialType || item == null) {
+                          return selectedType == item;
+                        } else {
+                          return false;
+                        }
+                      },
                     ),
-                    items:
-                        getTransactionSpecialTypesToShowGivenInitialTypeWhenAddingTransaction(
-                            widget.selectedType, isAddedToLoanObjective),
-                    getLabel: (item) {
-                      if (item is TransactionSpecialType || item == null) {
-                        return transactionTypeDisplayToEnum[item]
-                                ?.toString()
-                                .toLowerCase()
-                                .tr() ??
-                            "";
-                      } else {
-                        return "installments".tr();
-                      }
-                    },
-                    onSelected: (item) async {
-                      if (item == "installments") {
-                        openPopup(
-                          context,
-                          title: "track-installments".tr(),
-                          description: "track-installments-description".tr(),
-                          icon: navBarIconsData["goals"]!.iconData,
-                          onSubmit: () async {
-                            popRoute(context);
-                            dynamic result = await startCreatingInstallment(
-                                context: context);
-                            if (result == true) popRoute(context);
-                          },
-                          onSubmitLabel: "ok".tr(),
-                          onCancel: () {
-                            popRoute(context);
-                          },
-                          onCancelLabel: "cancel".tr(),
-                        );
-                      } else if (item is TransactionSpecialType ||
-                          item == null) {
-                        setSelectedType(transactionTypeDisplayToEnum[item]);
-                      }
-                    },
-                    getSelected: (item) {
-                      if (item is TransactionSpecialType || item == null) {
-                        return selectedType == item;
-                      } else {
-                        return false;
-                      }
-                    },
                   ),
                 ),
-              ),
               AnimatedExpanded(
                 expand: selectedType == TransactionSpecialType.repetitive ||
                     selectedType == TransactionSpecialType.subscription,
@@ -1591,7 +1650,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                               showMoreOptions = true;
                             });
                           },
-                          text: "more-options".tr(),
+                          text: "yubai-entry-advanced".tr(),
                         ),
                       )
                     : Column(
@@ -2304,6 +2363,7 @@ class DateButton extends StatefulWidget {
     this.internalPadding =
         const EdgeInsetsDirectional.only(start: 20, top: 6, bottom: 6, end: 4),
     this.timeBackgroundColor,
+    this.label,
   }) : super(key: key);
   final DateTime initialSelectedDate;
   final TimeOfDay initialSelectedTime;
@@ -2311,6 +2371,7 @@ class DateButton extends StatefulWidget {
   final Function(TimeOfDay) setSelectedTime;
   final EdgeInsetsDirectional internalPadding;
   final Color? timeBackgroundColor;
+  final String? label;
 
   @override
   State<DateButton> createState() => _DateButtonState();
@@ -2391,21 +2452,31 @@ class _DateButtonState extends State<DateButton> {
             ),
             SizedBox(width: 15),
             Expanded(
-              child: TextFont(
-                text: wordedDate,
-                fontWeight: FontWeight.bold,
-                fontSize: 23,
-                minFontSize: 18,
-                maxLines: 1,
-                autoSizeText: true,
-                overflowReplacement: TextFont(
-                  text: wordedDateShort,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 23,
-                  minFontSize: 15,
-                  maxLines: 1,
-                  autoSizeText: true,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.label != null)
+                    TextFont(
+                        text: widget.label!,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500),
+                  TextFont(
+                    text: wordedDate,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 23,
+                    minFontSize: 18,
+                    maxLines: 1,
+                    autoSizeText: true,
+                    overflowReplacement: TextFont(
+                      text: wordedDateShort,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 23,
+                      minFontSize: 15,
+                      maxLines: 1,
+                      autoSizeText: true,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(width: 10),
@@ -2547,7 +2618,7 @@ class _SelectTitleState extends State<SelectTitle> {
               getPlatform() == PlatformOS.isAndroid &&
               getIsFullScreen(context)
           ? null
-          : "enter-title".tr(),
+          : "yubai-entry-name".tr(),
       outsideExtraWidget: customDateTimeSelected
           ? null
           : OutsideExtraWidgetIconButton(
@@ -2644,7 +2715,7 @@ class _SelectTitleState extends State<SelectTitle> {
                         resetTitleSearch();
                       }
                     },
-                    labelText: "title-placeholder".tr(),
+                    labelText: "yubai-entry-name".tr(),
                     padding: EdgeInsetsDirectional.zero,
                   ),
                   AnimatedSizeSwitcher(
@@ -4370,7 +4441,7 @@ class _TransactionNotesTextInputState extends State<TransactionNotesTextInput> {
               handleOnTapOutside: false,
               borderRadius: BorderRadius.zero,
               padding: EdgeInsetsDirectional.zero,
-              labelText: "notes-placeholder".tr(),
+              labelText: "yubai-entry-note".tr(),
               icon: appStateSettings["outlinedIcons"]
                   ? Icons.sticky_note_2_outlined
                   : Icons.sticky_note_2_rounded,

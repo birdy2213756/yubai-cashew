@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:budget/struct/yubaiEntryPreferences.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/main.dart';
@@ -41,6 +42,7 @@ Future<bool> initializeSettings() async {
       await sharedPreferences.setString('userSettings', storedSettings);
       print(storedSettings);
       userSettings = json.decode(storedSettings);
+      migrateYubaiEntryPreferences(userSettings);
       //we need to load any defaults to migrate if on an older version backup restores
       //Set to defaults if a new setting is added, but no entry saved
       Map<String, dynamic> userPreferencesDefault =
@@ -234,6 +236,8 @@ Future<Map<String, dynamic>> getUserSettings() async {
     print("Found user settings on file");
 
     Map<String, dynamic> userSettingsJSON = json.decode(userSettings);
+    final migratedEntryDefaults =
+        migrateYubaiEntryPreferences(userSettingsJSON);
 
     //Set to defaults if a new setting is added, but no entry saved
     userPreferencesDefault.forEach((key, value) {
@@ -243,6 +247,10 @@ Future<Map<String, dynamic>> getUserSettings() async {
         userSettingsJSON[key] = userPreferencesDefault[key];
       }
     });
+    if (migratedEntryDefaults) {
+      await sharedPreferences.setString(
+          'userSettings', json.encode(userSettingsJSON));
+    }
     return userSettingsJSON;
   } catch (e) {
     print("There was an error, settings corrupted: " + e.toString());
