@@ -58,6 +58,7 @@ import 'package:flutter/services.dart' hide TextInput;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:budget/widgets/util/showTimePicker.dart';
+import 'package:budget/widgets/util/afterRouteTransition.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
 import 'package:budget/struct/currencyFunctions.dart';
@@ -722,6 +723,13 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   late TextEditingController _titleInputController;
   late TextEditingController _noteInputController;
+  VoidCallback? _cancelInitialAddSequence;
+
+  @override
+  void dispose() {
+    _cancelInitialAddSequence?.call();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -775,12 +783,13 @@ class _AddTransactionPageState extends State<AddTransactionPage>
       _titleInputController = new TextEditingController();
       _noteInputController = new LinkHighlighter();
 
-      Future.delayed(Duration(milliseconds: 0), () async {
+      _cancelInitialAddSequence = afterRouteTransition(context, () async {
         if (widget.transferBalancePopup) {
           openTransferBalancePopup();
           return;
         }
         await premiumPopupAddTransaction(context);
+        if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
         if (widget.startInitialAddTransactionSequence == false) return;
         if (appStateSettings["askForTransactionTitle"]) {
           openBottomSheet(

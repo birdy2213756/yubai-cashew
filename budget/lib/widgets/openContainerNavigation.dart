@@ -2,6 +2,7 @@ import 'package:budget/functions.dart';
 import 'package:budget/struct/defaultPreferences.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:animations/animations.dart';
 
 class OpenContainerNavigation extends StatelessWidget {
@@ -28,7 +29,10 @@ class OpenContainerNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (appStateSettings["batterySaver"] == true ||
+    // Web uses the existing fixed-size route transition. Scaling a complete
+    // form out of a small button adds costly clipping/layout during input setup.
+    if (kIsWeb ||
+        appStateSettings["batterySaver"] == true ||
         appStateSettings["appAnimations"] != AppAnimations.all.index) {
       Widget child = button(() async {
         if (onOpen != null) onOpen!();
